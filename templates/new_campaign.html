@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Buat Kampanye — DonasiKita{% endblock %}
+
+{% block extra_head %}
+<style>
+  .nc-page { max-width: 640px; margin: 0 auto; padding: 40px 24px; }
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 900; margin-bottom: 6px;
+  }
+  .page-sub { color: var(--text-muted); margin-bottom: 36px; font-size: 0.92rem; }
+
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px;
+  }
+  .form-section-title {
+    font-weight: 600; font-size: 0.82rem;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); margin: 28px 0 18px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  .form-section-title:first-child { margin-top: 0; }
+
+  .category-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-bottom: 0;
+  }
+  .cat-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 8px;
+    color: var(--text); cursor: pointer; text-align: center;
+    font-family: 'DM Sans', sans-serif; font-size: 0.83rem; font-weight: 600;
+    transition: all .2s;
+  }
+  .cat-btn:hover, .cat-btn.active {
+    background: #d4a85322; border-color: var(--gold); color: var(--gold);
+  }
+  .cat-icon { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+
+  .upload-area {
+    border: 2px dashed var(--border); border-radius: 12px;
+    padding: 36px 20px; text-align: center; cursor: pointer;
+    transition: border-color .2s; position: relative;
+    background: var(--surface2);
+  }
+  .upload-area:hover { border-color: var(--gold); }
+  .upload-area input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+  }
+  .upload-icon { font-size: 2rem; margin-bottom: 10px; }
+  .upload-text { font-size: 0.88rem; color: var(--text-muted); }
+  .upload-hint { font-size: 0.78rem; color: var(--text-dim); margin-top: 6px; }
+
+  .form-actions { margin-top: 28px; display: flex; gap: 12px; }
+  .form-actions .btn { flex: 1; justify-content: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nc-page">
+  <h1 class="page-title">Buat Kampanye</h1>
+  <p class="page-sub">Isi form di bawah untuk memulai kampanye donasi Anda.</p>
+
+  <form method="POST" enctype="multipart/form-data">
+    <div class="form-card">
+
+      <div class="form-section-title">📝 Informasi Kampanye</div>
+      <div class="form-group">
+        <label>Judul Kampanye *</label>
+        <input type="text" name="title" placeholder="Contoh: Bantuan Korban Banjir Jakarta" required>
+      </div>
+      <div class="form-group">
+        <label>Deskripsi *</label>
+        <textarea name="description" placeholder="Ceritakan tentang kampanye ini, siapa yang membutuhkan bantuan, dan bagaimana donasi akan digunakan..." required></textarea>
+      </div>
+
+      <div class="form-section-title">🏷️ Kategori</div>
+      <div class="category-grid" style="margin-bottom:16px;">
+        <button type="button" class="cat-btn" onclick="setCategory('Bencana Alam', this)">
+          <span class="cat-icon">🌊</span>Bencana Alam
+        </button>
+        <button type="button" class="cat-btn" onclick="setCategory('Pendidikan', this)">
+          <span class="cat-icon">📚</span>Pendidikan
+        </button>
+        <button type="button" class="cat-btn" onclick="setCategory('Keagamaan', this)">
+          <span class="cat-icon">🕌</span>Keagamaan
+        </button>
+        <button type="button" class="cat-btn" onclick="setCategory('Kesehatan', this)">
+          <span class="cat-icon">❤️</span>Kesehatan
+        </button>
+        <button type="button" class="cat-btn" onclick="setCategory('Lingkungan', this)">
+          <span class="cat-icon">🌱</span>Lingkungan
+        </button>
+        <button type="button" class="cat-btn" onclick="setCategory('Umum', this)">
+          <span class="cat-icon">🤝</span>Umum
+        </button>
+      </div>
+      <input type="hidden" name="category" id="category-input" value="Umum">
+
+      <div class="form-section-title">💰 Target Donasi</div>
+      <div class="form-group">
+        <label>Target Dana (Rp) *</label>
+        <input type="number" name="target_amount" placeholder="Contoh: 10000000" min="10000" required>
+      </div>
+
+      <div class="form-section-title">🖼️ Gambar Kampanye (opsional)</div>
+      <div class="upload-area" id="upload-area">
+        <input type="file" name="image" accept="image/*" onchange="previewImage(event)">
+        <div id="upload-placeholder">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Klik untuk upload gambar</div>
+          <div class="upload-hint">PNG, JPG, WEBP • Maks. 5MB</div>
+        </div>
+        <img id="preview-img" style="display:none;max-width:100%;max-height:200px;border-radius:8px;" alt="Preview">
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">🚀 Buat Kampanye</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Batal</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  function setCategory(val, el) {
+    document.getElementById('category-input').value = val;
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function previewImage(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = document.getElementById('preview-img');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+      document.getElementById('upload-placeholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+  // Default: Umum active
+  document.querySelectorAll('.cat-btn').forEach(b => {
+    if (b.textContent.includes('Umum')) b.classList.add('active');
+  });
+</script>
+{% endblock %}

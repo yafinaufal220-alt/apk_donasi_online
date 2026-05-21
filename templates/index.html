@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}DonasiKita — Beranda{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Hero */
+  .hero {
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, #d4a85318 0%, transparent 70%);
+    padding: 80px 24px 60px;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    display: inline-block; padding: 6px 16px;
+    border: 1px solid var(--gold); border-radius: 99px;
+    color: var(--gold); font-size: 0.8rem; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 900; line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .hero h1 em { color: var(--gold); font-style: normal; }
+  .hero p {
+    color: var(--text-muted); font-size: 1.1rem;
+    max-width: 520px; margin: 0 auto 36px; line-height: 1.7;
+  }
+
+  /* Stats Bar */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    max-width: 800px; margin: 48px auto 0;
+  }
+  .stat-item {
+    background: var(--surface); padding: 24px 20px; text-align: center;
+  }
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 700; color: var(--gold);
+    display: block; margin-bottom: 4px;
+  }
+  .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Section */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 700;
+  }
+
+  /* Campaign Grid */
+  .campaign-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
+  .campaign-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    transition: transform .25s, border-color .25s, box-shadow .25s;
+    display: flex; flex-direction: column;
+  }
+  .campaign-card:hover {
+    transform: translateY(-4px);
+    border-color: #d4a85355;
+    box-shadow: 0 20px 40px #d4a85310;
+  }
+  .campaign-img {
+    width: 100%; height: 200px; object-fit: cover;
+    background: linear-gradient(135deg, var(--surface2) 0%, #2a2a2a 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; color: var(--text-dim);
+  }
+  .campaign-img img { width: 100%; height: 100%; object-fit: cover; }
+  .campaign-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+  .campaign-category { margin-bottom: 10px; }
+  .campaign-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; font-weight: 700;
+    margin-bottom: 10px; line-height: 1.4;
+    color: var(--text);
+    text-decoration: none;
+    display: block;
+  }
+  .campaign-title:hover { color: var(--gold); }
+  .campaign-desc {
+    color: var(--text-muted); font-size: 0.88rem;
+    line-height: 1.6; margin-bottom: 16px;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .campaign-progress { margin-bottom: 14px; }
+  .progress-info {
+    display: flex; justify-content: space-between;
+    font-size: 0.82rem; margin-bottom: 8px;
+  }
+  .progress-collected { color: var(--gold); font-weight: 600; }
+  .progress-pct { color: var(--text-muted); }
+  .campaign-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 16px; border-top: 1px solid var(--border);
+  }
+  .campaign-target { font-size: 0.82rem; color: var(--text-dim); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 80px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .empty-icon { font-size: 4rem; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 1.3rem; margin-bottom: 10px; color: var(--text); }
+
+  @media (max-width: 640px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .campaign-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-eyebrow">Platform Donasi Terpercaya</div>
+  <h1>Bersama Kita Bisa<br><em>Membuat Perubahan</em></h1>
+  <p>Bergabunglah dengan ribuan donatur yang telah membantu sesama. Setiap rupiah yang Anda berikan adalah harapan nyata bagi mereka yang membutuhkan.</p>
+  <a href="{{ url_for('new_campaign') }}" class="btn btn-primary">Mulai Kampanye</a>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-number">{{ stats.total_campaigns }}</span>
+      <span class="stat-label">Kampanye Aktif</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">{{ stats.total_donors }}</span>
+      <span class="stat-label">Donatur</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">{{ stats.total_donations }}</span>
+      <span class="stat-label">Total Donasi</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number" style="font-size:1.2rem;">{{ stats.total_amount | rupiah }}</span>
+      <span class="stat-label">Dana Terkumpul</span>
+    </div>
+  </div>
+</section>
+
+<!-- Campaign List -->
+<div class="container">
+  <div class="section-header">
+    <h2 class="section-title">Kampanye Aktif</h2>
+  </div>
+
+  {% if campaigns %}
+  <div class="campaign-grid">
+    {% for c in campaigns %}
+    {% set progress = [(c.collected_amount / c.target_amount * 100), 100] | min | int if c.target_amount > 0 else 0 %}
+    <div class="campaign-card">
+      <div class="campaign-img">
+        {% if c.image_filename %}
+          <img src="{{ url_for('uploaded_file', filename=c.image_filename) }}" alt="{{ c.title }}">
+        {% else %}
+          {% if c.category == 'Bencana Alam' %}🌊
+          {% elif c.category == 'Pendidikan' %}📚
+          {% elif c.category == 'Keagamaan' %}🕌
+          {% elif c.category == 'Kesehatan' %}❤️
+          {% else %}🤝{% endif %}
+        {% endif %}
+      </div>
+      <div class="campaign-body">
+        <div class="campaign-category">
+          <span class="badge badge-gold">{{ c.category }}</span>
+        </div>
+        <a href="{{ url_for('campaign_detail', campaign_id=c.id) }}" class="campaign-title">{{ c.title }}</a>
+        <p class="campaign-desc">{{ c.description }}</p>
+
+        <div class="campaign-progress">
+          <div class="progress-info">
+            <span class="progress-collected">{{ c.collected_amount | rupiah }}</span>
+            <span class="progress-pct">{{ progress }}%</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width: {{ progress }}%"></div>
+          </div>
+        </div>
+
+        <div class="campaign-footer">
+          <span class="campaign-target">Target: {{ c.target_amount | rupiah }}</span>
+          <a href="{{ url_for('donate', campaign_id=c.id) }}" class="btn btn-primary btn-sm">Donasi</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🤝</div>
+    <h3>Belum ada kampanye</h3>
+    <p>Jadilah yang pertama membuat kampanye donasi.</p>
+    <a href="{{ url_for('new_campaign') }}" class="btn btn-primary" style="margin-top:20px">Buat Kampanye Pertama</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

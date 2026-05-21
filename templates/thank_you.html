@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Terima Kasih — DonasiKita{% endblock %}
+
+{% block extra_head %}
+<style>
+  .ty-page { max-width: 560px; margin: 0 auto; padding: 60px 24px; text-align: center; }
+  .ty-icon {
+    font-size: 5rem; margin-bottom: 24px;
+    animation: bounce .6s ease;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-20px); }
+  }
+  .ty-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem; font-weight: 900;
+    margin-bottom: 12px;
+  }
+  .ty-title span { color: var(--gold); }
+  .ty-sub { color: var(--text-muted); font-size: 1rem; margin-bottom: 36px; line-height: 1.7; }
+
+  .ty-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px;
+    margin-bottom: 32px; text-align: left;
+  }
+  .ty-row {
+    display: flex; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .ty-row:last-child { border-bottom: none; }
+  .ty-row .lbl { color: var(--text-muted); }
+  .ty-row .val { font-weight: 600; }
+  .amount-gold { color: var(--gold); font-size: 1.2rem; }
+
+  .share-text { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px; }
+  .ty-actions { display: flex; flex-direction: column; gap: 12px; }
+  .ty-actions .btn { justify-content: center; }
+
+  .confetti-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confetti-wrap" id="confetti"></div>
+
+<div class="ty-page">
+  <div class="ty-icon">🎉</div>
+  <h1 class="ty-title">Terima Kasih,<br><span>{{ donation.donor_name }}!</span></h1>
+  <p class="ty-sub">Donasi Anda telah dikonfirmasi. Kebaikan Anda akan membawa<br>perubahan nyata bagi mereka yang membutuhkan.</p>
+
+  <div class="ty-card">
+    <div class="ty-row">
+      <span class="lbl">Kampanye</span>
+      <span class="val">{{ donation.campaign_title }}</span>
+    </div>
+    <div class="ty-row">
+      <span class="lbl">Metode</span>
+      <span class="val">{{ donation.payment_method }}</span>
+    </div>
+    <div class="ty-row">
+      <span class="lbl">Status</span>
+      <span class="val"><span class="badge badge-green">✓ Dikonfirmasi</span></span>
+    </div>
+    <div class="ty-row">
+      <span class="lbl">Jumlah Donasi</span>
+      <span class="val amount-gold">{{ donation.amount | rupiah }}</span>
+    </div>
+  </div>
+
+  <p class="share-text">Ajak teman-teman Anda untuk ikut berdonasi 💛</p>
+
+  <div class="ty-actions">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Lihat Kampanye Lain</a>
+    <a href="{{ url_for('campaign_detail', campaign_id=donation.campaign_id) }}" class="btn btn-secondary">Kembali ke Kampanye</a>
+  </div>
+</div>
+
+<script>
+  // Simple confetti
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%';
+  document.getElementById('confetti').appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const pieces = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * -canvas.height,
+    w: Math.random() * 10 + 5,
+    h: Math.random() * 6 + 3,
+    color: ['#d4a853','#f0c878','#4ade80','#60a5fa','#f87171'][Math.floor(Math.random()*5)],
+    vx: (Math.random() - .5) * 3,
+    vy: Math.random() * 3 + 1,
+    rot: Math.random() * 360,
+    vrot: (Math.random() - .5) * 5,
+    alpha: 1,
+  }));
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+      p.x += p.vx; p.y += p.vy; p.rot += p.vrot;
+      if (p.y > canvas.height * .6) p.alpha -= .02;
+    });
+    frame++;
+    if (frame < 200) requestAnimationFrame(draw);
+    else document.getElementById('confetti').remove();
+  }
+  draw();
+</script>
+{% endblock %}

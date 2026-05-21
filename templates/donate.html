@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Donasi — {{ campaign.title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .donate-page { max-width: 620px; margin: 0 auto; padding: 40px 24px; }
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 900;
+    margin-bottom: 6px;
+  }
+  .page-sub { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 36px; }
+  .campaign-banner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 32px;
+  }
+  .campaign-banner-icon { font-size: 2rem; }
+  .campaign-banner-name { font-weight: 600; font-size: 0.95rem; }
+  .campaign-banner-label { font-size: 0.8rem; color: var(--text-muted); }
+
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px;
+  }
+  .form-section-title {
+    font-weight: 600; font-size: 0.85rem;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); margin-bottom: 20px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+
+  /* Nominal quick select */
+  .nominal-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-bottom: 14px;
+  }
+  .nominal-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 8px;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    transition: all .2s; text-align: center;
+  }
+  .nominal-btn:hover, .nominal-btn.active {
+    background: #d4a85322; border-color: var(--gold); color: var(--gold);
+  }
+
+  /* Payment method */
+  .payment-options { display: flex; flex-direction: column; gap: 10px; }
+  .payment-option {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+    cursor: pointer; transition: all .2s;
+  }
+  .payment-option:has(input:checked) {
+    border-color: var(--gold); background: #d4a85318;
+  }
+  .payment-option input { accent-color: var(--gold); }
+  .payment-icon { font-size: 1.4rem; }
+  .payment-name { font-weight: 600; font-size: 0.9rem; }
+  .payment-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+  .submit-section {
+    margin-top: 28px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .submit-section .btn { justify-content: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="donate-page">
+  <a href="{{ url_for('campaign_detail', campaign_id=campaign.id) }}" style="color:var(--text-muted);text-decoration:none;font-size:.88rem;">← Kembali</a>
+
+  <h1 class="page-title" style="margin-top:16px;">Form Donasi</h1>
+  <p class="page-sub">Isi data di bawah untuk melanjutkan donasi Anda.</p>
+
+  <div class="campaign-banner">
+    <div class="campaign-banner-icon">
+      {% if campaign.category == 'Bencana Alam' %}🌊{% elif campaign.category == 'Pendidikan' %}📚{% elif campaign.category == 'Keagamaan' %}🕌{% elif campaign.category == 'Kesehatan' %}❤️{% else %}🤝{% endif %}
+    </div>
+    <div>
+      <div class="campaign-banner-name">{{ campaign.title }}</div>
+      <div class="campaign-banner-label">Kampanye • {{ campaign.category }}</div>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('donate', campaign_id=campaign.id) }}">
+    <div class="form-card">
+
+      <!-- Info Donatur -->
+      <div class="form-section-title">👤 Informasi Donatur</div>
+      <div class="form-group">
+        <label>Nama Lengkap *</label>
+        <input type="text" name="donor_name" placeholder="Contoh: Budi Santoso" required>
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" name="donor_email" placeholder="email@contoh.com" required>
+      </div>
+      <div class="form-group">
+        <label>Pesan (opsional)</label>
+        <textarea name="message" placeholder="Tuliskan doa atau pesan dukungan Anda..."></textarea>
+      </div>
+
+      <!-- Jumlah Donasi -->
+      <div class="form-section-title" style="margin-top:28px;">💰 Jumlah Donasi</div>
+      <div class="nominal-grid">
+        <button type="button" class="nominal-btn" onclick="setNominal(10000)">Rp 10.000</button>
+        <button type="button" class="nominal-btn" onclick="setNominal(25000)">Rp 25.000</button>
+        <button type="button" class="nominal-btn" onclick="setNominal(50000)">Rp 50.000</button>
+        <button type="button" class="nominal-btn" onclick="setNominal(100000)">Rp 100.000</button>
+        <button type="button" class="nominal-btn" onclick="setNominal(250000)">Rp 250.000</button>
+        <button type="button" class="nominal-btn" onclick="setNominal(500000)">Rp 500.000</button>
+      </div>
+      <div class="form-group">
+        <label>Atau masukkan nominal lain (min. Rp 1.000) *</label>
+        <input type="number" name="amount" id="amount-input" placeholder="Masukkan nominal donasi" min="1000" required>
+      </div>
+
+      <!-- Metode Pembayaran -->
+      <div class="form-section-title" style="margin-top:28px;">🏦 Metode Pembayaran</div>
+      <div class="payment-options">
+        <label class="payment-option">
+          <input type="radio" name="payment_method" value="Transfer Bank" checked>
+          <span class="payment-icon">🏦</span>
+          <div>
+            <div class="payment-name">Transfer Bank</div>
+            <div class="payment-desc">BCA, Mandiri, BNI, BRI</div>
+          </div>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="payment_method" value="QRIS">
+          <span class="payment-icon">📲</span>
+          <div>
+            <div class="payment-name">QRIS</div>
+            <div class="payment-desc">GoPay, OVO, Dana, ShopeePay, dll</div>
+          </div>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="payment_method" value="Virtual Account">
+          <span class="payment-icon">💳</span>
+          <div>
+            <div class="payment-name">Virtual Account</div>
+            <div class="payment-desc">Bayar lewat ATM atau m-banking</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="submit-section">
+        <button type="submit" class="btn btn-primary">Lanjutkan Pembayaran →</button>
+        <a href="{{ url_for('campaign_detail', campaign_id=campaign.id) }}" class="btn btn-secondary">Batal</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  function setNominal(val) {
+    document.getElementById('amount-input').value = val;
+    document.querySelectorAll('.nominal-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Konfirmasi Pembayaran — DonasiKita{% endblock %}
+
+{% block extra_head %}
+<style>
+  .confirm-page { max-width: 560px; margin: 0 auto; padding: 40px 24px; }
+  .confirm-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+  }
+  .confirm-header {
+    background: linear-gradient(135deg, #d4a85322, #a0703022);
+    border-bottom: 1px solid var(--border);
+    padding: 32px; text-align: center;
+  }
+  .confirm-icon { font-size: 3.5rem; margin-bottom: 12px; }
+  .confirm-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 900;
+    margin-bottom: 6px;
+  }
+  .confirm-header p { color: var(--text-muted); font-size: 0.9rem; }
+
+  .confirm-body { padding: 28px; }
+
+  .info-table { width: 100%; border-collapse: collapse; }
+  .info-table tr { border-bottom: 1px solid var(--border); }
+  .info-table tr:last-child { border-bottom: none; }
+  .info-table td {
+    padding: 14px 0; font-size: 0.9rem; vertical-align: top;
+  }
+  .info-table td:first-child { color: var(--text-muted); width: 40%; }
+  .info-table td:last-child { font-weight: 500; }
+  .amount-highlight {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 700; color: var(--gold);
+  }
+
+  /* Payment instruction */
+  .payment-instruction {
+    margin: 24px 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .payment-instruction h4 {
+    font-weight: 700; font-size: 0.9rem; margin-bottom: 14px;
+    color: var(--gold);
+  }
+  .instr-step {
+    display: flex; gap: 12px; align-items: flex-start;
+    margin-bottom: 12px; font-size: 0.87rem;
+  }
+  .instr-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--gold); color: #0f0f0f;
+    font-weight: 700; font-size: 0.78rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .instr-text { color: var(--text-muted); line-height: 1.5; }
+  .bank-info {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-top: 10px;
+  }
+  .bank-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; font-size: 0.88rem;
+  }
+  .bank-row:last-child { margin-bottom: 0; }
+  .bank-row .label { color: var(--text-muted); }
+  .bank-row .value { font-weight: 700; font-family: monospace; font-size: 1rem; }
+
+  .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+  .action-buttons .btn { justify-content: center; }
+
+  .warning-note {
+    font-size: 0.8rem; color: var(--text-muted);
+    text-align: center; margin-top: 16px; line-height: 1.6;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirm-page">
+  <div class="confirm-card">
+    <div class="confirm-header">
+      <div class="confirm-icon">⏳</div>
+      <h2>Menunggu Pembayaran</h2>
+      <p>Selesaikan pembayaran dan klik Konfirmasi di bawah</p>
+    </div>
+
+    <div class="confirm-body">
+      <table class="info-table">
+        <tr>
+          <td>Kampanye</td>
+          <td>{{ donation.campaign_title }}</td>
+        </tr>
+        <tr>
+          <td>Donatur</td>
+          <td>{{ donation.donor_name }}</td>
+        </tr>
+        <tr>
+          <td>Email</td>
+          <td>{{ donation.donor_email }}</td>
+        </tr>
+        <tr>
+          <td>Metode</td>
+          <td>{{ donation.payment_method }}</td>
+        </tr>
+        <tr>
+          <td>Jumlah</td>
+          <td><span class="amount-highlight">{{ donation.amount | rupiah }}</span></td>
+        </tr>
+      </table>
+
+      <!-- Instruksi Pembayaran -->
+      {% if donation.payment_method == 'Transfer Bank' %}
+      <div class="payment-instruction">
+        <h4>🏦 Instruksi Transfer Bank</h4>
+        <div class="bank-info">
+          <div class="bank-row"><span class="label">Bank</span><span class="value">BCA</span></div>
+          <div class="bank-row"><span class="label">No. Rekening</span><span class="value">1234567890</span></div>
+          <div class="bank-row"><span class="label">Atas Nama</span><span class="value">Yayasan DonasiKita</span></div>
+          <div class="bank-row"><span class="label">Nominal</span><span class="value" style="color:var(--gold)">{{ donation.amount | rupiah }}</span></div>
+        </div>
+        <div class="instr-step" style="margin-top:14px;">
+          <div class="instr-num">1</div>
+          <div class="instr-text">Transfer sesuai nominal tepat ke rekening di atas</div>
+        </div>
+        <div class="instr-step">
+          <div class="instr-num">2</div>
+          <div class="instr-text">Simpan bukti transfer Anda</div>
+        </div>
+        <div class="instr-step">
+          <div class="instr-num">3</div>
+          <div class="instr-text">Klik tombol <strong>Konfirmasi Pembayaran</strong> di bawah</div>
+        </div>
+      </div>
+
+      {% elif donation.payment_method == 'QRIS' %}
+      <div class="payment-instruction">
+        <h4>📲 Instruksi QRIS</h4>
+        <div style="text-align:center; padding:20px; background:white; border-radius:10px; margin-bottom:14px;">
+          <div style="font-size:0.8rem;color:#666;margin-bottom:8px;">Scan QR Code ini</div>
+          <!-- Placeholder QR -->
+          <div style="width:160px;height:160px;background:#f0f0f0;border:2px dashed #ccc;margin:0 auto;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:0.78rem;">
+            QR Code Placeholder
+          </div>
+        </div>
+        <div class="instr-step">
+          <div class="instr-num">1</div>
+          <div class="instr-text">Buka aplikasi GoPay / OVO / Dana / ShopeePay Anda</div>
+        </div>
+        <div class="instr-step">
+          <div class="instr-num">2</div>
+          <div class="instr-text">Scan QR code di atas dan bayar <strong>{{ donation.amount | rupiah }}</strong></div>
+        </div>
+        <div class="instr-step">
+          <div class="instr-num">3</div>
+          <div class="instr-text">Klik <strong>Konfirmasi Pembayaran</strong> setelah berhasil</div>
+        </div>
+      </div>
+
+      {% else %}
+      <div class="payment-instruction">
+        <h4>💳 Virtual Account</h4>
+        <div class="bank-info">
+          <div class="bank-row"><span class="label">Bank</span><span class="value">BNI</span></div>
+          <div class="bank-row"><span class="label">No. VA</span><span class="value">88878887{{ donation.id }}</span></div>
+          <div class="bank-row"><span class="label">Nominal</span><span class="value" style="color:var(--gold)">{{ donation.amount | rupiah }}</span></div>
+        </div>
+        <div class="instr-step" style="margin-top:14px;">
+          <div class="instr-num">1</div>
+          <div class="instr-text">Buka ATM atau m-banking Anda</div>
+        </div>
+        <div class="instr-step">
+          <div class="instr-num">2</div>
+          <div class="instr-text">Pilih Transfer → Virtual Account, masukkan nomor VA di atas</div>
+        </div>
+        <div class="instr-step">
+          <div class="instr-num">3</div>
+          <div class="instr-text">Bayar tepat <strong>{{ donation.amount | rupiah }}</strong> dan konfirmasi</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <form method="POST">
+        <div class="action-buttons">
+          <button type="submit" class="btn btn-primary">✓ Konfirmasi Pembayaran</button>
+          <a href="{{ url_for('index') }}" class="btn btn-secondary">Kembali ke Beranda</a>
+        </div>
+      </form>
+
+      <p class="warning-note">
+        Dengan mengklik Konfirmasi, Anda menyatakan telah melakukan pembayaran.<br>
+        Donasi akan diverifikasi oleh tim kami dalam 1×24 jam.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

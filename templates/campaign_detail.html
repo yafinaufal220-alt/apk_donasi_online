@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.title }} — DonasiKita{% endblock %}
+
+{% block extra_head %}
+<style>
+  .detail-hero {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px;
+  }
+  .detail-inner { max-width: 900px; margin: 0 auto; }
+  .back-link {
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;
+    margin-bottom: 24px;
+    transition: color .2s;
+  }
+  .back-link:hover { color: var(--text); }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 360px; gap: 40px; margin-top: 40px; }
+
+  .detail-image {
+    width: 100%; border-radius: 16px; overflow: hidden;
+    background: var(--surface2); height: 320px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5rem; color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .detail-image img { width: 100%; height: 100%; object-fit: cover; }
+
+  .detail-content { padding-top: 8px; }
+  .detail-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+  .detail-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 900; line-height: 1.2;
+    margin-bottom: 20px;
+  }
+  .detail-desc {
+    color: var(--text-muted); line-height: 1.8; font-size: 0.95rem;
+    margin-bottom: 28px;
+  }
+
+  /* Sticky sidebar */
+  .sidebar { position: sticky; top: 84px; align-self: start; }
+  .donate-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px;
+  }
+  .donate-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .amount-row { margin-bottom: 8px; }
+  .amount-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 700; color: var(--gold);
+  }
+  .amount-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+  .progress-section { margin: 20px 0; }
+  .prog-stats { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 8px; }
+  .prog-target { color: var(--text-muted); }
+  .prog-pct { color: var(--gold); font-weight: 600; }
+
+  /* Donors list */
+  .donors-section { margin-top: 48px; }
+  .donors-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .donor-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 0; border-bottom: 1px solid var(--border);
+  }
+  .donor-item:last-child { border-bottom: none; }
+  .donor-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), #a07030);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.9rem; color: #0f0f0f;
+    flex-shrink: 0;
+  }
+  .donor-info { flex: 1; min-width: 0; }
+  .donor-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+  .donor-message { color: var(--text-muted); font-size: 0.83rem; }
+  .donor-amount { color: var(--gold); font-weight: 700; font-size: 0.9rem; white-space: nowrap; }
+  .donor-date { color: var(--text-dim); font-size: 0.77rem; margin-top: 2px; }
+
+  .no-donors { color: var(--text-muted); font-size: 0.9rem; padding: 20px 0; }
+
+  /* Delete form */
+  .danger-zone {
+    margin-top: 32px; padding: 20px;
+    border: 1px solid #7f1d1d; border-radius: 12px;
+    background: #7f1d1d18;
+  }
+  .danger-zone h4 { color: var(--red); font-size: 0.88rem; margin-bottom: 10px; }
+
+  @media (max-width: 768px) {
+    .detail-grid { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <a class="back-link" href="{{ url_for('index') }}">← Kembali ke Beranda</a>
+
+  <div class="detail-grid">
+    <!-- Left: Detail Kampanye -->
+    <div>
+      <div class="detail-image">
+        {% if campaign.image_filename %}
+          <img src="{{ url_for('uploaded_file', filename=campaign.image_filename) }}" alt="{{ campaign.title }}">
+        {% else %}
+          {% if campaign.category == 'Bencana Alam' %}🌊
+          {% elif campaign.category == 'Pendidikan' %}📚
+          {% elif campaign.category == 'Keagamaan' %}🕌
+          {% elif campaign.category == 'Kesehatan' %}❤️
+          {% else %}🤝{% endif %}
+        {% endif %}
+      </div>
+
+      <div class="detail-content" style="margin-top:28px;">
+        <div class="detail-meta">
+          <span class="badge badge-gold">{{ campaign.category }}</span>
+        </div>
+        <h1 class="detail-title">{{ campaign.title }}</h1>
+        <p class="detail-desc">{{ campaign.description }}</p>
+      </div>
+
+      <!-- Donor list -->
+      <div class="donors-section">
+        <h3>💛 Donatur Terbaru</h3>
+        {% if donations %}
+          {% for d in donations %}
+          <div class="donor-item">
+            <div class="donor-avatar">{{ d.donor_name[0].upper() }}</div>
+            <div class="donor-info">
+              <div class="donor-name">{{ d.donor_name }}</div>
+              {% if d.message %}
+              <div class="donor-message">"{{ d.message }}"</div>
+              {% endif %}
+              <div class="donor-date">{{ d.created_at[:10] }}</div>
+            </div>
+            <div class="donor-amount">{{ d.amount | rupiah }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="no-donors">Belum ada donatur. Jadilah yang pertama!</p>
+        {% endif %}
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="danger-zone">
+        <h4>⚠ Zona Berbahaya</h4>
+        <form method="POST" action="{{ url_for('delete_campaign', campaign_id=campaign.id) }}"
+              onsubmit="return confirm('Yakin ingin menghapus kampanye ini?')">
+          <button type="submit" class="btn btn-danger btn-sm">Hapus Kampanye</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right: Sidebar -->
+    <div class="sidebar">
+      <div class="donate-box">
+        <h3>Dukung Kampanye Ini</h3>
+
+        <div class="amount-row">
+          <div class="amount-big">{{ campaign.collected_amount | rupiah }}</div>
+          <div class="amount-label">terkumpul dari {{ campaign.target_amount | rupiah }}</div>
+        </div>
+
+        <div class="progress-section">
+          <div class="prog-stats">
+            <span class="prog-target">Target</span>
+            <span class="prog-pct">{{ progress }}%</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width: {{ progress }}%"></div>
+          </div>
+        </div>
+
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;">
+          {{ donations | length }} donatur telah berpartisipasi
+        </div>
+
+        <a href="{{ url_for('donate', campaign_id=campaign.id) }}" class="btn btn-primary" style="width:100%;justify-content:center;">
+          ❤️ Donasi Sekarang
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
